@@ -75,6 +75,21 @@ export const Header = () => {
       </div>
 
       <div className="flex items-center gap-6 text-sm">
+        {/* Live USD/BDT Exchange Rate Readout */}
+        <div className="hidden lg:flex items-center gap-2 bg-emerald-50/90 border border-emerald-200/90 px-3 py-1.5 rounded-lg shadow-2xs font-mono">
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="flex flex-col">
+            <span className="text-[9px] text-emerald-800 font-bold uppercase tracking-wider">
+              1 USD
+            </span>
+            <span className="text-xs font-bold text-emerald-700 leading-tight">
+              = ৳{bdtRate.toFixed(2)} BDT
+            </span>
+          </div>
+        </div>
+
+        <div className="h-6 w-px bg-slate-200 hidden lg:block" />
+
         {/* CFD Total Exposure Readout */}
         <div className="hidden xl:flex items-center gap-4 bg-slate-50 border border-slate-200/80 px-4 py-1.5 rounded-lg shadow-2xs">
           <div className="flex flex-col">

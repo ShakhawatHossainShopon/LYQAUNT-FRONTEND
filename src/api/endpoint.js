@@ -12,6 +12,8 @@ export const API = {
   toggleAsset: `${API_BASE_URL}/api/assets/toggle`,
   openTrade: `${API_BASE_URL}/api/trade/open`,
   calcTrade: `${API_BASE_URL}/api/trade/calc`,
+  portfolio: `${API_BASE_URL}/api/portfolio`,
+  news: `${API_BASE_URL}/api/news`,
   history: `${API_BASE_URL}/api/history`,
   closePosition: `${API_BASE_URL}/api/positions/close`,
   closeAllPositions: `${API_BASE_URL}/api/positions/close-all`,

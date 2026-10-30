@@ -2,8 +2,10 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 // Your page components
 import Dashboard from "@/pages/Dashboard";
+import Portfolio from "@/pages/Portfolio";
 import Positions from "@/pages/Positions";
 import ExitPositions from "@/pages/ExitPositions";
+import News from "@/pages/News";
 import Correlation from "@/pages/Correlation";
 import AssetList from "@/pages/AssetList";
 import MyAssets from "@/pages/MyAssets";
@@ -19,6 +21,10 @@ const router = createBrowserRouter([
         element: <Dashboard />,
       },
       {
+        path: "/portfolio",
+        element: <Portfolio />,
+      },
+      {
         path: "/positions",
         element: <Positions />,
       },
@@ -29,6 +35,10 @@ const router = createBrowserRouter([
       {
         path: "/exit-positions",
         element: <ExitPositions />,
+      },
+      {
+        path: "/news",
+        element: <News />,
       },
       {
         path: "/correlation",

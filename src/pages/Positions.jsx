@@ -64,7 +64,7 @@ export default function Positions() {
     try {
       localStorage.setItem(
         "lyquant_asset_alert_caps_v2",
-        JSON.stringify(alertCaps)
+        JSON.stringify(alertCaps),
       );
     } catch {
       // Ignore localStorage errors
@@ -74,12 +74,13 @@ export default function Positions() {
   // Global summary values
   const totalProfitAcc = summary?.total_profit ?? 0;
   const totalProfitUSD =
-    summary?.total_profit_usd ?? (isCent ? totalProfitAcc / 100 : totalProfitAcc);
+    summary?.total_profit_usd ??
+    (isCent ? totalProfitAcc / 100 : totalProfitAcc);
   const totalProfitBDT = totalProfitUSD * bdtRate;
 
   const marginUSD = isCent
     ? (account?.margin ?? 0) / 100
-    : account?.margin ?? 0;
+    : (account?.margin ?? 0);
   const marginBDT = marginUSD * bdtRate;
   const marginLevel = account?.margin_level ?? 0;
 
@@ -88,20 +89,23 @@ export default function Positions() {
   const totalLots = summary?.total_lots ?? 0;
 
   // Helper to commit position cap on blur or Enter
-  const commitPositionCap = useCallback((ticket, rawVal) => {
-    const num = parseFloat(rawVal);
-    const fallback = isCent ? 100 : 1.0;
-    const finalVal = !isNaN(num) && num > 0 ? num : fallback;
+  const commitPositionCap = useCallback(
+    (ticket, rawVal) => {
+      const num = parseFloat(rawVal);
+      const fallback = isCent ? 100 : 1.0;
+      const finalVal = !isNaN(num) && num > 0 ? num : fallback;
 
-    setAlertCaps((prev) => ({
-      ...prev,
-      [ticket]: finalVal,
-    }));
-    setInputDrafts((prev) => ({
-      ...prev,
-      [ticket]: String(finalVal),
-    }));
-  }, [isCent]);
+      setAlertCaps((prev) => ({
+        ...prev,
+        [ticket]: finalVal,
+      }));
+      setInputDrafts((prev) => ({
+        ...prev,
+        [ticket]: String(finalVal),
+      }));
+    },
+    [isCent],
+  );
 
   // Sync newly executed trade alert cap
   const handleTradeSuccess = useCallback((tradeData) => {
@@ -264,8 +268,8 @@ export default function Positions() {
         <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-center gap-3 text-rose-700 text-xs">
           <AlertTriangle className="w-4 h-4 shrink-0 text-rose-500" />
           <span>
-            <strong>Connection Warning:</strong> Unable to connect to MT5 server (
-            {error}). Ensure the MetaTrader 5 terminal is open and logged in.
+            <strong>Connection Warning:</strong> Unable to connect to MT5 server
+            ({error}). Ensure the MetaTrader 5 terminal is open and logged in.
           </span>
         </div>
       )}
@@ -326,10 +330,14 @@ export default function Positions() {
           </div>
           <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 text-[11px] font-mono text-slate-500">
             <span>
-              Lots: <strong className="text-slate-800">{totalLots.toFixed(2)}</strong>
+              Lots:{" "}
+              <strong className="text-slate-800">{totalLots.toFixed(2)}</strong>
             </span>
             <span className="text-indigo-600 font-semibold">
-              ৳{totalVolBDT.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+              ৳
+              {totalVolBDT.toLocaleString("en-US", {
+                maximumFractionDigits: 0,
+              })}
             </span>
           </div>
         </div>
@@ -345,8 +353,8 @@ export default function Positions() {
               marginLevel > 200
                 ? "text-emerald-600"
                 : marginLevel > 100
-                ? "text-amber-600"
-                : "text-rose-600"
+                  ? "text-amber-600"
+                  : "text-rose-600"
             }`}
           >
             {marginLevel.toFixed(1)}%
@@ -373,7 +381,9 @@ export default function Positions() {
             {alertCount > 0 ? `${alertCount} Triggered` : "All Safe"}
           </div>
           <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 text-[11px] font-mono text-slate-500">
-            <span>Default Cap: {defaultCap} {currencyUnit}</span>
+            <span>
+              Default Cap: {defaultCap} {currencyUnit}
+            </span>
             <span
               className={
                 alertCount > 0
@@ -525,8 +535,8 @@ export default function Positions() {
             const cardBorderClass = isAlertHit
               ? "border-rose-400 ring-2 ring-rose-500/20 bg-rose-50/10"
               : isApproaching
-              ? "border-amber-300 ring-1 ring-amber-500/20"
-              : "border-slate-200/80";
+                ? "border-amber-300 ring-1 ring-amber-500/20"
+                : "border-slate-200/80";
 
             // Value currently displayed in input (allows seamless typing/backspace)
             const draftInputVal =
@@ -583,25 +593,6 @@ export default function Positions() {
                         Safe
                       </span>
                     )}
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSelectedAssetForTrade({
-                          symbol: pos.symbol,
-                          description: pos.symbol,
-                          bid: pos.price_current,
-                          ask: pos.price_current,
-                          digits: 5,
-                          defaultCap: pos.effectiveCap,
-                        })
-                      }
-                      title={`Open new position on ${pos.symbol}`}
-                      className="px-2 py-1 rounded-md bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-                    >
-                      <TrendingUp className="w-3 h-3 text-indigo-600" />
-                      <span>Trade</span>
-                    </button>
                   </div>
                 </div>
 
@@ -630,7 +621,10 @@ export default function Positions() {
                       Base Vol (BDT)
                     </div>
                     <div className="text-xs font-bold text-indigo-600 mt-0.5">
-                      ৳{pos.baseVolBDT.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+                      ৳
+                      {pos.baseVolBDT.toLocaleString("en-US", {
+                        maximumFractionDigits: 0,
+                      })}
                     </div>
                   </div>
                 </div>
@@ -645,7 +639,9 @@ export default function Positions() {
                   </div>
                   <div className="text-slate-300">→</div>
                   <div>
-                    <span className="text-slate-400 text-[11px]">Current: </span>
+                    <span className="text-slate-400 text-[11px]">
+                      Current:{" "}
+                    </span>
                     <strong className="text-slate-900">
                       {pos.price_current.toFixed(5)}
                     </strong>
@@ -747,7 +743,9 @@ export default function Positions() {
                             }));
                           }
                         }}
-                        onBlur={() => commitPositionCap(pos.ticket, draftInputVal)}
+                        onBlur={() =>
+                          commitPositionCap(pos.ticket, draftInputVal)
+                        }
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
                             commitPositionCap(pos.ticket, draftInputVal);
@@ -782,8 +780,8 @@ export default function Positions() {
                             isAlertHit
                               ? "text-rose-600"
                               : isApproaching
-                              ? "text-amber-600"
-                              : "text-slate-700"
+                                ? "text-amber-600"
+                                : "text-slate-700"
                           }
                         >
                           {pos.capUsagePercent.toFixed(1)}%
@@ -802,10 +800,10 @@ export default function Positions() {
                           isAlertHit
                             ? "bg-rose-600 animate-pulse"
                             : isApproaching
-                            ? "bg-amber-500"
-                            : isProfit
-                            ? "bg-emerald-500"
-                            : "bg-indigo-500"
+                              ? "bg-amber-500"
+                              : isProfit
+                                ? "bg-emerald-500"
+                                : "bg-indigo-500"
                         }`}
                         style={{
                           width: `${Math.min(100, Math.max(isProfit ? 0 : 2, pos.capUsagePercent))}%`,
@@ -828,23 +826,6 @@ export default function Positions() {
                   <span className="text-[11px] font-mono text-slate-400">
                     Order #{pos.ticket} • {pos.type}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSelectedAssetForTrade({
-                        symbol: pos.symbol,
-                        description: pos.symbol,
-                        bid: pos.price_current,
-                        ask: pos.price_current,
-                        digits: 5,
-                        defaultCap: pos.effectiveCap,
-                      })
-                    }
-                    className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-98"
-                  >
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    <span>Open Trade</span>
-                  </button>
                 </div>
               </div>
             );
