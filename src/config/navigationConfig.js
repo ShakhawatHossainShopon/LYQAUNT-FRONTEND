@@ -13,9 +13,9 @@ export const NAVIGATION_CONFIG = {
   links: [
     { name: "Dashboard", href: "/", iconName: "LayoutDashboard" },
     { name: "Position Volumes", href: "/positions", iconName: "Activity" },
-    { name: "Asset List", href: "/assets", iconName: "Layers" },
     { name: "My Assets", href: "/my-assets", iconName: "Bookmark" },
-    { name: "All Positions", href: "/all-positions", iconName: "ListOrdered" },
+    { name: "Asset List", href: "/assets", iconName: "Layers" },
     { name: "Correlation", href: "/correlation", iconName: "GitCommit" },
+    { name: "Exit Positions", href: "/exit-positions", iconName: "LogOut" },
   ],
 };

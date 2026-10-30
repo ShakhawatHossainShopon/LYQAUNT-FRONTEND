@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 import {
   RefreshCw,
   Search,
@@ -12,10 +13,12 @@ import {
   Flame,
   CheckCircle2,
   BellRing,
+  TrendingUp,
 } from "lucide-react";
 import usePolling from "@/hooks/usePolling";
 import { API } from "@/api/endpoint";
 import { NAVIGATION_CONFIG } from "@/config/navigationConfig";
+import TradeModal from "@/components/trade/TradeModal";
 
 export default function Positions() {
   const { data: response, loading, error } = usePolling(API.positions, 2000);
@@ -23,6 +26,7 @@ export default function Positions() {
   // Search and filter state
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL"); // ALL, PROFIT, DRAWDOWN, ALERT
+  const [selectedAssetForTrade, setSelectedAssetForTrade] = useState(null);
 
   const data = response?.data;
   const account = data?.account;
@@ -98,6 +102,16 @@ export default function Positions() {
       [ticket]: String(finalVal),
     }));
   }, [isCent]);
+
+  // Sync newly executed trade alert cap
+  const handleTradeSuccess = useCallback((tradeData) => {
+    if (tradeData?.ticket && tradeData?.cap) {
+      setAlertCaps((prev) => ({
+        ...prev,
+        [tradeData.ticket]: tradeData.cap,
+      }));
+    }
+  }, []);
 
   // Compute calculated metrics for each position
   const enrichedPositions = useMemo(() => {
@@ -228,6 +242,13 @@ export default function Positions() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Link
+            to="/my-assets"
+            className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>Trade Watchlist</span>
+          </Link>
           <button
             onClick={() => window.location.reload()}
             className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
@@ -482,6 +503,15 @@ export default function Positions() {
                 ? "No active open positions in your MT5 terminal."
                 : "No positions match the current filters."}
             </span>
+            {positions.length === 0 && (
+              <Link
+                to="/my-assets"
+                className="mt-3 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5"
+              >
+                <TrendingUp className="w-4 h-4" />
+                <span>Open Position from Watchlist</span>
+              </Link>
+            )}
           </div>
         </div>
       ) : (
@@ -531,8 +561,8 @@ export default function Positions() {
                     </div>
                   </div>
 
-                  {/* Dynamic Status Badge */}
-                  <div>
+                  {/* Dynamic Status Badge & Quick Trade */}
+                  <div className="flex items-center gap-2">
                     {isAlertHit ? (
                       <span className="px-2 py-1 rounded-md text-[10px] font-bold uppercase bg-rose-600 text-white flex items-center gap-1 shadow-xs animate-pulse">
                         <AlertTriangle className="w-3 h-3" />
@@ -553,6 +583,25 @@ export default function Positions() {
                         Safe
                       </span>
                     )}
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedAssetForTrade({
+                          symbol: pos.symbol,
+                          description: pos.symbol,
+                          bid: pos.price_current,
+                          ask: pos.price_current,
+                          digits: 5,
+                          defaultCap: pos.effectiveCap,
+                        })
+                      }
+                      title={`Open new position on ${pos.symbol}`}
+                      className="px-2 py-1 rounded-md bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 text-[11px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <TrendingUp className="w-3 h-3 text-indigo-600" />
+                      <span>Trade</span>
+                    </button>
                   </div>
                 </div>
 
@@ -773,10 +822,46 @@ export default function Positions() {
                     </div>
                   )}
                 </div>
+
+                {/* 6. Action Footer: Open Trade */}
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-[11px] font-mono text-slate-400">
+                    Order #{pos.ticket} • {pos.type}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedAssetForTrade({
+                        symbol: pos.symbol,
+                        description: pos.symbol,
+                        bid: pos.price_current,
+                        ask: pos.price_current,
+                        digits: 5,
+                        defaultCap: pos.effectiveCap,
+                      })
+                    }
+                    className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer active:scale-98"
+                  >
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    <span>Open Trade</span>
+                  </button>
+                </div>
               </div>
             );
           })}
         </div>
+      )}
+
+      {/* Open Position Trade Modal */}
+      {selectedAssetForTrade && (
+        <TradeModal
+          key={selectedAssetForTrade.symbol}
+          isOpen={true}
+          asset={selectedAssetForTrade}
+          isCent={isCent}
+          onClose={() => setSelectedAssetForTrade(null)}
+          onSuccess={handleTradeSuccess}
+        />
       )}
     </div>
   );

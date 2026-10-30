@@ -7,6 +7,14 @@ export const API = {
     currency: `${API_BASE_URL}/api/account/currency`,
   },
   positions: `${API_BASE_URL}/api/positions`,
+  assets: `${API_BASE_URL}/api/assets`,
+  trackedAssets: `${API_BASE_URL}/api/assets/tracked`,
+  toggleAsset: `${API_BASE_URL}/api/assets/toggle`,
+  openTrade: `${API_BASE_URL}/api/trade/open`,
+  calcTrade: `${API_BASE_URL}/api/trade/calc`,
+  history: `${API_BASE_URL}/api/history`,
+  closePosition: `${API_BASE_URL}/api/positions/close`,
+  closeAllPositions: `${API_BASE_URL}/api/positions/close-all`,
 };
 
 export default API;

@@ -1,54 +1,56 @@
 import React from "react";
+import { Flame } from "lucide-react";
 import { NAVIGATION_CONFIG } from "../../config/navigationConfig";
 import usePolling from "@/hooks/usePolling";
+import { API } from "@/api/endpoint";
 
 export const Header = () => {
   const {
     data: response,
     loading,
     error,
-  } = usePolling("http://127.0.0.1:5000/api/account", 2000);
+  } = usePolling(API.positions, 2000);
 
-  if (loading)
+  if (loading && !response)
     return (
       <div className="h-16 border-b border-slate-200 bg-white px-6 flex items-center text-xs text-slate-400">
         Loading live data...
       </div>
     );
-  if (error)
+  if (error && !response)
     return (
       <div className="h-16 border-b border-slate-200 bg-white px-6 flex items-center text-xs text-rose-500">
         Error: {error}
       </div>
     );
 
-  const account = response?.data;
-  if (!account) return null;
+  const payload = response?.data;
+  const account = payload?.account || {};
+  const summary = payload?.summary || {};
 
-  const isCent = account.currency === "USC";
+  const isCent = account.is_cent ?? account.currency === "USC";
+  const bdtRate = NAVIGATION_CONFIG.usdToBdtRate || 120.0;
 
   // Base conversions
-  const balanceInUSD = isCent ? account.balance / 100 : account.balance;
-  const equityInUSD = isCent ? account.equity / 100 : account.equity;
+  const balanceInUSD = isCent ? (account.balance || 0) / 100 : account.balance || 0;
+  const equityInUSD = isCent ? (account.equity || 0) / 100 : account.equity || 0;
 
-  const balanceBDT = balanceInUSD * NAVIGATION_CONFIG.usdToBdtRate;
-  const equityBDT = equityInUSD * NAVIGATION_CONFIG.usdToBdtRate;
+  const balanceBDT = balanceInUSD * bdtRate;
+  const equityBDT = equityInUSD * bdtRate;
 
   // Format strings using API data
   const balanceLabel = isCent
-    ? `${account.balance.toLocaleString("en-US", { minimumFractionDigits: account.currency_digits || 2 })} USC`
-    : `$${account.balance.toLocaleString("en-US", { minimumFractionDigits: account.currency_digits || 2 })}`;
+    ? `${(account.balance || 0).toLocaleString("en-US", { minimumFractionDigits: account.currency_digits || 2 })} USC`
+    : `$${(account.balance || 0).toLocaleString("en-US", { minimumFractionDigits: account.currency_digits || 2 })}`;
 
   const equityLabel = isCent
-    ? `${account.equity.toLocaleString("en-US", { minimumFractionDigits: account.currency_digits || 2 })} USC`
-    : `$${account.equity.toLocaleString("en-US", { minimumFractionDigits: account.currency_digits || 2 })}`;
+    ? `${(account.equity || 0).toLocaleString("en-US", { minimumFractionDigits: account.currency_digits || 2 })} USC`
+    : `$${(account.equity || 0).toLocaleString("en-US", { minimumFractionDigits: account.currency_digits || 2 })}`;
 
-  // Calculate dynamic floating profit string/percentage
-  const profitValue = account.profit || 0;
-  const equityChangeLabel =
-    profitValue >= 0
-      ? `+$${profitValue.toFixed(2)}`
-      : `-$${Math.abs(profitValue).toFixed(2)}`;
+  // CFD Total Exposure from summary (matches Position Volume page's card exactly)
+  const cfdExposureUSD = summary.total_volume_usd ?? account.trading_volume ?? 0;
+  const cfdExposureBDT = cfdExposureUSD * bdtRate;
+  const totalLots = summary.total_lots ?? 0;
 
   const badgeIcon = isCent ? "¢" : "$";
   const badgeColorClass = isCent
@@ -73,36 +75,37 @@ export const Header = () => {
       </div>
 
       <div className="flex items-center gap-6 text-sm">
-        {/* Total Volume Readout */}
-        <div className="hidden 2xl:flex items-center gap-4 bg-slate-50 border border-slate-200/80 px-4 py-1.5 rounded-lg">
+        {/* CFD Total Exposure Readout */}
+        <div className="hidden xl:flex items-center gap-4 bg-slate-50 border border-slate-200/80 px-4 py-1.5 rounded-lg shadow-2xs">
           <div className="flex flex-col">
-            <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-              Total Vol (USD)
+            <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1">
+              <Flame className="w-3 h-3 text-indigo-500" />
+              CFD Total Exposure
             </span>
-            <span className="font-semibold text-slate-900 font-mono text-xs">
-              ${Number(account.trading_volume ?? 0).toFixed(2)}
-            </span>
+            <div className="flex items-center gap-1.5 font-mono">
+              <span className="font-bold text-slate-900 text-xs">
+                ${cfdExposureUSD.toFixed(2)} USD
+              </span>
+              <span className="text-slate-300">/</span>
+              <span className="font-semibold text-indigo-600 text-xs">
+                ৳{cfdExposureBDT.toLocaleString("en-US", { maximumFractionDigits: 0 })}
+              </span>
+            </div>
           </div>
 
           <div className="h-5 w-px bg-slate-200" />
 
-          <div className="flex flex-col">
+          <div className="flex flex-col items-end">
             <span className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-              Total Vol (BDT)
+              Lots
             </span>
-            <span className="font-semibold text-indigo-600 font-mono text-xs">
-              ৳
-              {(
-                Number(account.trading_volume ?? 0) *
-                NAVIGATION_CONFIG.usdToBdtRate
-              ).toLocaleString("en-US", {
-                maximumFractionDigits: 2,
-              })}
+            <span className="font-semibold text-slate-700 font-mono text-xs">
+              {totalLots.toFixed(2)}
             </span>
           </div>
         </div>
 
-        <div className="h-6 w-px bg-slate-200 hidden 2xl:block" />
+        <div className="h-6 w-px bg-slate-200 hidden xl:block" />
 
         {/* Account Info from Live API */}
         <div className="flex items-center gap-3">
