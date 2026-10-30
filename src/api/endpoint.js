@@ -6,6 +6,7 @@ export const API = {
     summary: `${API_BASE_URL}/api/account/summary`,
     currency: `${API_BASE_URL}/api/account/currency`,
   },
+  positions: `${API_BASE_URL}/api/positions`,
 };
 
 export default API;
